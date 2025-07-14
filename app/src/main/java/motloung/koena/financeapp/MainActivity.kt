@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 putExtra("summary", "Monthly Report: R2,000 saved")
             }
-            startActivity(intent);
+            startActivity(intent)
         }
     }
 }
