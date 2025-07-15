@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="com.example.permission.VIEW_ANALYTICS" />
+    <uses-permission android:name="com.example.permission.RECEIVE_BUDGET_REMINDER" />
 
     <application
         android:allowBackup="true"
@@ -23,6 +24,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".BudgetReceiver"
+            android:exported="true"
+            android:permission="com.example.permission.RECEIVE_BUDGET_REMINDER">
+            <intent-filter>
+                <action android:name="com.example.ACTION_BUDGET_REMINDER" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

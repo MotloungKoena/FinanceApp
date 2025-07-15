@@ -16,8 +16,8 @@ class MainActivity : AppCompatActivity() {
         openAnalyticsBtn.setOnClickListener {
             val intent = Intent().apply {
                 component = ComponentName(
-                    "com.example.analyticsapp",
-                    "com.example.analyticsapp.AnalyticsActivity"
+                    "motloung.koena.analyticsapp",
+                    "motloung.koena.analyticsapp.AnalyticsActivity"
                 )
                 putExtra("summary", "Monthly Report: R2,000 saved")
             }
