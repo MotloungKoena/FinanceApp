@@ -2,8 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="com.example.permission.VIEW_ANALYTICS" />
     <uses-permission android:name="com.example.permission.RECEIVE_BUDGET_REMINDER" />
+
+    <permission
+        android:name="com.example.permission.ACCESS_FINANCE_SERVICE"
+        android:protectionLevel="signature" />
+
+    <permission
+        android:name="com.example.permission.READ_FINANCE_DATA"
+        android:protectionLevel="normal" /> <!--Extra security is implemented in the FinanceProvider since I am keeping the protectionLevel as normal-->
+
 
     <application
         android:allowBackup="true"
@@ -16,23 +27,57 @@
         android:theme="@style/Theme.FinanceApp"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
         <receiver
-            android:name=".BudgetReceiver"
+            android:name=".ipc.BudgetReminderReceiver"
             android:exported="true"
             android:permission="com.example.permission.RECEIVE_BUDGET_REMINDER">
             <intent-filter>
-                <action android:name="com.example.ACTION_BUDGET_REMINDER" />
+                <action android:name="com.example.ACTION_BUDGET_REMINDER"/>
             </intent-filter>
         </receiver>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!--<provider
+            android:name=".provider.FinanceProvider"
+            android:authorities="motloung.koena.financeapp.provider"
+            android:exported="true"
+            android:readPermission="com.example.permission.READ_FINANCE_DATA"
+            android:grantUriPermissions="true" />-->
+        <provider
+            android:name=".provider.FinanceProvider"
+            android:authorities="motloung.koena.financeapp.financeprovider"
+            android:exported="true"
+            android:readPermission="com.example.permission.READ_FINANCE_DATA"
+            android:grantUriPermissions="true" />
+
+
+
+        <service
+            android:name=".service.FinanceSummaryService"
+            android:exported="true"
+            android:permission="com.example.permission.ACCESS_FINANCE_SERVICE">
+            <intent-filter>
+                <action android:name="motloung.koena.financeapp.ACTION_SUMMARY_SERVICE" />
+            </intent-filter>
+        </service>
+
 
     </application>
 
