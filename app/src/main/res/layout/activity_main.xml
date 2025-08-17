@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Top app bar with app name -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -15,7 +14,6 @@
         app:title="FinanceApp"
         app:titleCentered="true" />
 
-    <!-- Empty message -->
     <TextView
         android:id="@+id/txtEmpty"
         android:layout_width="match_parent"
@@ -26,14 +24,12 @@
         android:textSize="18sp"
         android:visibility="gone" />
 
-    <!-- RecyclerView for events -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Buttons -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSendSummary"
         android:text="Send Analytics Summary"

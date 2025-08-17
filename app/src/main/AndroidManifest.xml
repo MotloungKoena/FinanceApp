@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="com.example.permission.VIEW_ANALYTICS" />
     <uses-permission android:name="com.example.permission.RECEIVE_BUDGET_REMINDER" />
@@ -14,7 +13,6 @@
     <permission
         android:name="com.example.permission.READ_FINANCE_DATA"
         android:protectionLevel="normal" /> <!--Extra security is implemented in the FinanceProvider since I am keeping the protectionLevel as normal-->
-
 
     <application
         android:allowBackup="true"
@@ -54,20 +52,12 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!--<provider
-            android:name=".provider.FinanceProvider"
-            android:authorities="motloung.koena.financeapp.provider"
-            android:exported="true"
-            android:readPermission="com.example.permission.READ_FINANCE_DATA"
-            android:grantUriPermissions="true" />-->
         <provider
             android:name=".provider.FinanceProvider"
             android:authorities="motloung.koena.financeapp.financeprovider"
             android:exported="true"
             android:readPermission="com.example.permission.READ_FINANCE_DATA"
             android:grantUriPermissions="true" />
-
-
 
         <service
             android:name=".service.FinanceSummaryService"
@@ -77,8 +67,5 @@
                 <action android:name="motloung.koena.financeapp.ACTION_SUMMARY_SERVICE" />
             </intent-filter>
         </service>
-
-
     </application>
-
 </manifest>

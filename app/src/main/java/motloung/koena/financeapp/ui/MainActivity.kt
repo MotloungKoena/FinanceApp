@@ -1,101 +1,3 @@
-/*package motloung.koena.financeapp.ui
-
-import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
-import android.os.Bundle
-import android.view.View
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.coroutines.launch
-import motloung.koena.financeapp.data.Event
-import motloung.koena.financeapp.databinding.ActivityMainBinding
-
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private val vm: MainViewModel by viewModels()
-    private val adapter = EventAdapter()
-
-    private val requestPostNotifications =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op */ }
-
-    private fun ensureNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= 33) {
-            val granted = ContextCompat.checkSelfPermission(
-                this, Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!granted) requestPostNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        ensureNotificationPermission()
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        binding.rv.layoutManager = LinearLayoutManager(this)
-        binding.rv.adapter = adapter
-
-        // Listen for changes in the event list
-        lifecycleScope.launchWhenStarted {
-            vm.events.collect { events ->
-                adapter.submitList(events)
-
-                if (events.isEmpty()) {
-                    binding.txtEmpty.visibility = View.VISIBLE
-                    binding.rv.visibility = View.GONE
-                } else {
-                    binding.txtEmpty.visibility = View.GONE
-                    binding.rv.visibility = View.VISIBLE
-                }
-            }
-        }
-
-        // Clear History with confirmation
-        binding.btnClear.setOnClickListener {
-            androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Clear History")
-                .setMessage("Are you sure you want to delete all finance events? This cannot be undone.")
-                .setPositiveButton("Yes") { _, _ ->
-                    lifecycleScope.launch { vm.clear() }
-                    Toast.makeText(this, "History cleared", Toast.LENGTH_SHORT).show()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-        }
-
-        // Send summary to AnalyticsApp
-        binding.btnSendSummary.setOnClickListener {
-            val count = adapter.currentList.size
-            val last = adapter.currentList.firstOrNull()?.payload ?: "No last message"
-            val summary = "FinanceApp summary\n\nTotal reminders: $count\nLast reminder: $last"
-
-            val i = Intent().apply {
-                setClassName(
-                    "motloung.koena.analyticsapp",
-                    "motloung.koena.analyticsapp.AnalyticsActivity"
-                )
-                action = "motloung.koena.analyticsapp.VIEW_ANALYTICS"
-                putExtra("summary", summary)
-                setPackage("motloung.koena.analyticsapp")
-            }
-
-            try {
-                startActivity(i)
-            } catch (e: Exception) {
-                Toast.makeText(this, "AnalyticsApp not installed", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-}*/
-
 package motloung.koena.financeapp.ui
 
 import android.Manifest
@@ -147,7 +49,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ---- Intent validation for explicit launches from AnalyticsApp ----
         run {
             val allowedCaller = "motloung.koena.analyticsapp"
             val expectedAction = "motloung.koena.financeapp.VIEW_FINANCE"
@@ -155,28 +56,20 @@ class MainActivity : AppCompatActivity() {
             val fromExplicit = intent.component != null && intent.`package` == "motloung.koena.financeapp"
             val actionOk = intent.action == null || intent.action == expectedAction
 
-            // Best-effort caller check using referrer/package—works for explicit intents we create:
             val ref = intent.`package` ?: callingActivity?.packageName ?: intent.getStringExtra("caller_pkg")
             val callerOk = (ref == null) || (ref == allowedCaller)
 
             if (!fromExplicit || !actionOk || !callerOk) {
-                // Reject unexpected callers/actions for marking (log + finish)
                 android.util.Log.w("FinanceMain", "Rejected launch: fromExplicit=$fromExplicit actionOk=$actionOk caller=$ref")
-                // Optionally show a toast for demo:
-                // Toast.makeText(this, "Blocked unexpected launch", Toast.LENGTH_SHORT).show()
-                // finish() // uncomment if you want hard block
             }
         }
 
-
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(false) // no back button
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
         binding.rv.layoutManager = LinearLayoutManager(this)
         binding.rv.adapter = adapter
 
-        // Observe data + toggle empty view
         lifecycleScope.launchWhenStarted {
             vm.events.collect { events ->
                 adapter.submitList(events)
@@ -190,7 +83,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Clear History (confirm)
         binding.btnClear.setOnClickListener {
             androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Clear History")
@@ -203,7 +95,6 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
-        // Send summary to AnalyticsApp (unchanged)
         binding.btnSendSummary.setOnClickListener {
             val count = adapter.currentList.size
             val last = adapter.currentList.firstOrNull()?.payload ?: "No last message"
@@ -226,7 +117,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Export / Share (CSV or PDF)
         binding.btnShare.setOnClickListener {
             val items = adapter.currentList
             if (items.isEmpty()) {
@@ -240,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                 .setTitle("Export as")
                 .setItems(arrayOf("CSV", "PDF")) { _, which ->
                     when (which) {
-                        0 -> { // CSV
+                        0 -> {
                             val i = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/csv"
                                 putExtra(Intent.EXTRA_SUBJECT, "Finance Export")
@@ -248,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             startActivity(Intent.createChooser(i, "Share CSV"))
                         }
-                        1 -> { // PDF
+                        1 -> {
                             lifecycleScope.launch(Dispatchers.IO) {
                                 val file = generatePdf(this@MainActivity, csv)
                                 withContext(Dispatchers.Main) {
@@ -262,8 +152,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ===== Helpers: CSV & PDF =====
-
     private fun toCsv(items: List<Event>): String {
         val sb = StringBuilder("id,type,payload,receivedAt\n")
         items.forEach { e ->
@@ -273,43 +161,14 @@ class MainActivity : AppCompatActivity() {
         return sb.toString()
     }
 
-    /*private fun generatePdf(context: Context, csvText: String): File {
-        val pdfDocument = PdfDocument()
-        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4
-        val page = pdfDocument.startPage(pageInfo)
-
-        val paint = Paint()
-        val lines = csvText.split("\n")
-        var y = 30f
-        val lineHeight = paint.descent() - paint.ascent()
-
-        lines.forEach { line ->
-            if (line.isNotEmpty()) {
-                page.canvas.drawText(line, 10f, y, paint)
-                y += lineHeight
-                // simple single-page writer; for huge CSVs you'd paginate
-                if (y > 820f) return@forEach
-            }
-        }
-
-        pdfDocument.finishPage(page)
-
-        val file = File(context.getExternalFilesDir(null), "finance_events.pdf")
-        FileOutputStream(file).use { pdfDocument.writeTo(it) }
-        pdfDocument.close()
-        return file
-    }*/
-
     private fun generatePdf(context: Context, csvText: String): File {
-        // --- Page setup (A4 @ ~72 dpi) ---
         val pageWidth = 595
         val pageHeight = 842
         val margin = 40f
         val headerGap = 12f
-        val bodyTop = 120f          // space for header
+        val bodyTop = 120f
         val footerBottom = pageHeight - 24f
 
-        // --- Prepare paints ---
         val titlePaint = Paint().apply {
             isAntiAlias = true
             textSize = 18f
@@ -323,16 +182,15 @@ class MainActivity : AppCompatActivity() {
         val bodyPaint = Paint().apply {
             isAntiAlias = true
             textSize = 10f
-            typeface = android.graphics.Typeface.MONOSPACE // keeps CSV columns aligned
+            typeface = android.graphics.Typeface.MONOSPACE
         }
         val footerPaint = Paint().apply {
             isAntiAlias = true
             textSize = 10f
         }
 
-        // --- Derived info ---
         val lines = csvText.split("\n")
-        val totalRows = (lines.size - 1).coerceAtLeast(0)  // exclude header row if present
+        val totalRows = (lines.size - 1).coerceAtLeast(0)
         val now = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
             .format(java.util.Date())
 
@@ -344,12 +202,9 @@ class MainActivity : AppCompatActivity() {
         val canvas = page.canvas
 
         fun drawHeaderAndRules() {
-            // Title
             canvas.drawText("Finance Events Export", margin, 50f, titlePaint)
-            // Meta (timestamp + count)
             canvas.drawText("Generated: $now", margin, 50f + headerGap + 12f, metaPaint)
             canvas.drawText("Total rows: $totalRows", margin, 50f + 2 * (headerGap + 12f), metaPaint)
-            // Divider
             canvas.drawLine(margin, bodyTop - 10f, pageWidth - margin, bodyTop - 10f, linePaint)
         }
 
@@ -359,44 +214,33 @@ class MainActivity : AppCompatActivity() {
             canvas.drawText(text, pageWidth - margin - textWidth, footerBottom, footerPaint)
         }
 
-        // Header on first page
         drawHeaderAndRules()
 
-        // --- Write CSV lines (simple pagination) ---
         val lineHeight = bodyPaint.descent() - bodyPaint.ascent()
         lines.forEachIndexed { idx, raw ->
             val line = raw.trimEnd()
             if (line.isEmpty()) return@forEachIndexed
 
-            // If we’re about to run into the footer area, finish page & start new
             if (y + lineHeight > footerBottom - 10f) {
                 drawFooter()
                 pdf.finishPage(page)
                 pageNum++
                 y = bodyTop
                 page = pdf.startPage(PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNum).create())
-                // new canvas for new page
                 val c = page.canvas
-                // swap reference so our helpers use the new canvas
-                // (Kotlin captures the outer `canvas` val; reassign via reflection is messy, so re-draw using local val)
-                // Easiest: redeclare a new header using local canvas
-                // Title
                 c.drawText("Finance Events Export", margin, 50f, titlePaint)
                 c.drawText("Generated: $now", margin, 50f + headerGap + 12f, metaPaint)
                 c.drawText("Total rows: $totalRows", margin, 50f + 2 * (headerGap + 12f), metaPaint)
                 c.drawLine(margin, bodyTop - 10f, pageWidth - margin, bodyTop - 10f, linePaint)
             }
 
-            // Draw the line
             page.canvas.drawText(line, margin, y, bodyPaint)
             y += lineHeight
         }
 
-        // Footer on last page
         drawFooter()
         pdf.finishPage(page)
 
-        // --- Save file ---
         val outFile = File(context.getExternalFilesDir(null), "finance_events_${now.replace(" ", "_").replace(":", "")}.pdf")
         FileOutputStream(outFile).use { pdf.writeTo(it) }
         pdf.close()

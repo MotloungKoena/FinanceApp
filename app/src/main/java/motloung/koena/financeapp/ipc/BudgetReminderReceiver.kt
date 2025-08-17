@@ -19,12 +19,10 @@ class BudgetReminderReceiver : BroadcastReceiver() {
         if (intent.action != "com.example.ACTION_BUDGET_REMINDER") return
         val msg = intent.getStringExtra("message") ?: return
 
-        // persist
         CoroutineScope(Dispatchers.IO).launch {
             AppDb.get(context).eventDao().insert(Event(type = "BUDGET_REMINDER", payload = msg))
         }
 
-        // Android 13+ needs POST_NOTIFICATIONS; guard the notify call
         val canNotify = if (Build.VERSION.SDK_INT >= 33) {
             ContextCompat.checkSelfPermission(
                 context, Manifest.permission.POST_NOTIFICATIONS
